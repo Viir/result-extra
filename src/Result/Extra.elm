@@ -3,7 +3,6 @@ module Result.Extra exposing
     , combine, combineMap, combineFirst, combineSecond, combineBoth, combineMapFirst, combineMapSecond, combineMapBoth
     , singleton, andMap
     , or, orLazy, orElseLazy, orElse
-    , toTask
     )
 
 {-| Convenience functions for working with `Result`.
@@ -28,14 +27,7 @@ module Result.Extra exposing
 
 @docs or, orLazy, orElseLazy, orElse
 
-
-# Conversions
-
-@docs toTask
-
 -}
-
-import Task exposing (Task)
 
 
 {-| Check whether the result is `Ok` without unwrapping it.
@@ -446,29 +438,3 @@ filter err predicate result =
 
 
 
--- Conversions
-
-
-{-| Convert a `Result` to a `Task` that will fail or succeed immediately.
-
-    toTask (Ok 4) == Task.succeed 4
-
-    toTask (Err "msg") == Task.fail "msg"
-
-This can be helpful when the value of a succeeding Task needs to be decoded, but
-a failure to decode should result in a failing `Task`, not a succeeding Task
-containing a `Result.Err`:
-
-andThenDecode : (a -> Result x b) -> Task x a -> Task x b
-andThenDecode decode =
-Task.andThen (decode >> Result.Extra.toTask)
-
--}
-toTask : Result x a -> Task x a
-toTask result =
-    case result of
-        Ok a ->
-            Task.succeed a
-
-        Err x ->
-            Task.fail x
